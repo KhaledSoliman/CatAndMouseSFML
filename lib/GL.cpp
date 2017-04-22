@@ -79,7 +79,7 @@ void GL::World::populateWorld() {
     sf::Vector2f currentPosition = startingPosition;
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
-            currentPosition.x += tileSize.x + 0.f;
+            currentPosition.x += tileSize.x + 5.f;
             if ((j == ((height - 1) / 2)) && (i == (width - 1)))
                 content[j][i].setTile(sf::Color(0xFFFFFFFF), currentPosition, tileSize, TileType::bridge, Point(i, j));
             else if (j % (height - 1) == 0 || i % (width - 1) == 0)
@@ -89,7 +89,7 @@ void GL::World::populateWorld() {
             content[j][i].setEntity(nullptr);
         }
         currentPosition.x = startingPosition.x;
-        currentPosition.y += tileSize.y + 0.f;
+        currentPosition.y += tileSize.y + 5.f;
     }
     mouseLocation = Point(4,4);
     catLocation = Point(2,5);
