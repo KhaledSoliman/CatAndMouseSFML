@@ -3,8 +3,8 @@
 #include "Game.h"
 
 void triggers::quit(){
+    Game::window.clear();
    Game::window.close();
-
 }
 
 void triggers::startGame() {
