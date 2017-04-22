@@ -45,6 +45,7 @@ void Game::Run() {
                         element.second->clickScan(window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y)));
                         break;
                     }
+                while (window.pollEvent(event));
             } else if (event.type == sf::Event::MouseMoved) {
                 for (auto element: GUI::menus)
                     if (element.second->isActive())
@@ -73,7 +74,7 @@ void Game::Run() {
                     GL::world.moveEntity(GL::EntityType::Cat, static_cast<GL::Direction>(rand() % 4));
                 }
             }
+            RenderFrame();
         }
-        RenderFrame();
     }
 }

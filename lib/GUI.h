@@ -69,6 +69,8 @@ namespace GUI {
 
         void hoveringScan(const sf::Vector2f &);
 
+        void createBackground();
+
         void setActive(bool);
 
         bool isActive();
@@ -95,6 +97,7 @@ namespace GUI {
     private:
         std::set<Button *> buttons;
         std::set<sf::Text *> texts;
+        sf::Vector2f startingPosition;
         sf::Vector2f currentPosition;
         sf::Vector2f incVector;
         bool active;
@@ -105,6 +108,7 @@ namespace GUI {
         sf::Color defaultColor;
         sf::Color hoverColor;
         sf::Color clickColor;
+        sf::RectangleShape background;
     };
 
     void Init();

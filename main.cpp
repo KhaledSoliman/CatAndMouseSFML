@@ -6,5 +6,5 @@ int main() {
     Game::Init();
     GUI::Init();
     Game::Run();
-    return 0;
+    return EXIT_SUCCESS;
 }

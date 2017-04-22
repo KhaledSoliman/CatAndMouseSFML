@@ -49,6 +49,7 @@ void GUI::createMainMenu() {
     pMenu->setPosition(sf::Vector2f(200.f, 250.f));
     pMenu->addButton("New Game");
     pMenu->addButton("Quit");
+    pMenu->createBackground();
     menus[Menus::Main] = pMenu;
 }
 
@@ -59,10 +60,11 @@ void GUI::createModeMenu(){
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
-    pMenu->setPosition(sf::Vector2f(200.f, 150.f));
+    pMenu->setPosition(sf::Vector2f(-1800.f, 150.f));
     pMenu->addButton("1 Player");
     pMenu->addButton("2 Players");
     pMenu->addButton("Back");
+    pMenu->createBackground();
     menus[Menus::Modes] = pMenu;
 }
 
@@ -73,11 +75,12 @@ void GUI::createEndGameMenu(const std::string &message) {
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
-    pMenu->setPosition(sf::Vector2f(400.f, 300.f));
+    pMenu->setPosition(sf::Vector2f(-1600.f, 300.f));
     pMenu->addText(message);
     pMenu->addButton("Restart");
     pMenu->addButton("Back to Main Menu");
     pMenu->addButton("Quit");
+    pMenu->createBackground();
     menus[Menus::EndGame] = pMenu;
 }
 
@@ -129,6 +132,7 @@ void GUI::Menu::addText(const std::string &value) {
 
 void GUI::Menu::draw(sf::RenderWindow &window) const {
     if (active){
+        window.draw(background);
         for (auto button: buttons) {
             window.draw(*button);
         }
@@ -142,16 +146,33 @@ void GUI::Menu::draw(sf::RenderWindow &window) const {
 void GUI::Menu::setActive(bool flag) {
     if(active){
         sf::Time totalTime = sf::seconds(0.0f);
-        sf::Time time = sf::seconds(0.75f);
-        sf::Vector2f offsetVector = sf::Vector2f(-1000.f,0.f);
+        sf::Time time = sf::seconds(0.5f);
+        sf::Vector2f offsetVector = sf::Vector2f(-2000.f,0.f);
         while(totalTime < time){
+            for(auto element: texts)
+                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
             for(auto element: buttons)
                 element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            background.move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            Game::RenderFrame();
+            totalTime += Game::timePerFrame;
+        }
+        active = flag;
+    } else {
+        active = flag;
+        sf::Time totalTime = sf::seconds(0.0f);
+        sf::Time time = sf::seconds(0.5f);
+        sf::Vector2f offsetVector = sf::Vector2f(2000.f,0.f);
+        while(totalTime < time){
+            for(auto element: texts)
+                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            for(auto element: buttons)
+                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            background.move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
             Game::RenderFrame();
             totalTime += Game::timePerFrame;
         }
     }
-    active = flag;
 }
 
 bool GUI::Menu::isActive() {
@@ -159,11 +180,28 @@ bool GUI::Menu::isActive() {
 }
 
 void GUI::Menu::setPosition(const sf::Vector2f &pos) {
-    currentPosition = pos;
+    currentPosition = startingPosition = pos;
 }
 
 void GUI::Menu::setInc(const sf::Vector2f &inc) {
     incVector = inc;
+}
+
+void GUI::Menu::createBackground() {
+    sf::Vector2f size(50.f,50.f);
+    float maxWidth = 0;
+    for(auto element: texts){
+        size.y += element->getLocalBounds().height + incVector.y;
+        maxWidth = element->getLocalBounds().width > maxWidth ? element->getLocalBounds().width : maxWidth;
+    }
+    for(auto element: buttons){
+        size.y += element->getLocalBounds().height + incVector.y;
+        maxWidth = element->getLocalBounds().width > maxWidth ? element->getLocalBounds().width : maxWidth;
+    }
+    size.x += maxWidth;
+    background.setSize(size);
+    background.setFillColor(sf::Color(0x000000B3));
+    background.setPosition(startingPosition-sf::Vector2f(25.f,25.f));
 }
 
 void GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
@@ -174,6 +212,7 @@ void GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
             buttonClickSound.sound.play();
             element->trigger();
             element->setState(enabled);
+            element->setFillColor(defaultColor);
             break;
         }
     }

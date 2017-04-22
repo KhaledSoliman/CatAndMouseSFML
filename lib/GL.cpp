@@ -172,7 +172,6 @@ GL::World::World(unsigned int newHeight, unsigned int newWidth, const sf::Vector
         content[i] = new Tile[width];
     startingPosition = pos;
     tileSize = size;
-    populateWorld();
 }
 
 void GL::World::draw(sf::RenderWindow &window) {
