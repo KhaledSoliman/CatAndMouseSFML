@@ -62,7 +62,7 @@ namespace GL {
     public:
         Tile() {}
 
-        void setTile(const sf::Color &, const sf::Vector2f &,const sf::Vector2f&, TileType,Point);
+        void setTile(const sf::Vector2f &,const sf::Vector2f&, TileType,Point);
 
         Entity* getEntity();
 
@@ -119,9 +119,14 @@ namespace GL {
 
     void Render(sf::RenderWindow &);
 
+    void Init();
+
+    //TODO:: Destroy some crap
+
     extern World world;
     extern Point mouseLocation;
     extern Point catLocation;
+    extern std::map<std::string, const sf::Texture*> textures;
 };
 
 

@@ -52,26 +52,34 @@ void Game::Run() {
                         element.second->hoveringScan(
                                 window.mapPixelToCoords(sf::Vector2i(event.mouseMove.x, event.mouseMove.y)));
             } else if (event.type == sf::Event::KeyPressed) {
+                bool flag;
                     switch (event.key.code) {
                         case sf::Keyboard::W:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::North);
+                            flag = true;
                             break;
                         case sf::Keyboard::D:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::East);
+                            flag = true;
                             break;
                         case sf::Keyboard::A:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::West);
+                            flag = true;
                             break;
                         case sf::Keyboard::S:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::South);
+                            flag = true;
                             break;
                         default:
+                            flag = false;
                             break;
                     }
-                if(gameMode){
-                    currentEntity  = 1 - currentEntity;
-                }else{
-                    GL::world.moveEntity(GL::EntityType::Cat, static_cast<GL::Direction>(rand() % 4));
+                if(flag){
+                    if(gameMode){
+                        currentEntity  = 1 - currentEntity;
+                    }else{
+                        GL::world.moveEntity(GL::EntityType::Cat, static_cast<GL::Direction>(rand() % 4));
+                    }
                 }
             }
             RenderFrame();

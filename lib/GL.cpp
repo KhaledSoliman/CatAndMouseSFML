@@ -4,7 +4,7 @@
 GL::Point GL::mouseLocation(4, 4);
 GL::Point GL::catLocation(2, 5);
 GL::World GL::world(9, 9, sf::Vector2f(600.f, 50.f), sf::Vector2f(80.f, 80.f));
-
+std::map<std::string, const sf::Texture*> GL::textures;
 /*
  * Functions Native to the Namespace.
  */
@@ -13,6 +13,23 @@ void GL::Render(sf::RenderWindow &window) {
     world.draw(window);
 }
 
+void GL::Init(){
+    sf::Texture* pTexture = new sf::Texture;
+    pTexture->loadFromFile("../assets/textures/mouse_texture.png");
+    textures["mouse"] = pTexture;
+    pTexture = new sf::Texture;
+    pTexture->loadFromFile("../assets/textures/water_texture.jpg");
+    textures["water"] = pTexture;
+    pTexture = new sf::Texture;
+    pTexture->loadFromFile("../assets/textures/grass_texture.png");
+    textures["grass"] = pTexture;
+    pTexture = new sf::Texture;
+    pTexture->loadFromFile("../assets/textures/cat_texture.png");
+    textures["cat"] = pTexture;
+    pTexture = new sf::Texture;
+    pTexture->loadFromFile("../assets/textures/bridge_texture.jpg");
+    textures["bridge"] = pTexture;
+}
 /*
  * Tile Class Definition
  */
@@ -36,9 +53,8 @@ GL::Point GL::Tile::getWorldPosition() const {
     return coords;
 }
 
-void GL::Tile::setTile(const sf::Color &color, const sf::Vector2f &pos, const sf::Vector2f &size, TileType tileType,
+void GL::Tile::setTile(const sf::Vector2f &pos, const sf::Vector2f &size, TileType tileType,
                        Point location) {
-    setFillColor(color);
     setSize(size);
     setPosition(pos);
     coords = location;
@@ -79,27 +95,38 @@ void GL::World::populateWorld() {
     sf::Vector2f currentPosition = startingPosition;
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
-            currentPosition.x += tileSize.x + 5.f;
-            if ((j == ((height - 1) / 2)) && (i == (width - 1)))
-                content[j][i].setTile(sf::Color(0xFFFFFFFF), currentPosition, tileSize, TileType::bridge, Point(i, j));
-            else if (j % (height - 1) == 0 || i % (width - 1) == 0)
-                content[j][i].setTile(sf::Color(0x0000FFFF), currentPosition, tileSize, TileType::water, Point(i, j));
-            else
-                content[j][i].setTile(sf::Color(0x006400FF), currentPosition, tileSize, TileType::land, Point(i, j));
-            content[j][i].setEntity(nullptr);
+            currentPosition.x += tileSize.x;
+            if ((j == ((height - 1) / 2)) && (i == (width - 1))){
+                content[j][i].setTile(currentPosition, tileSize, TileType::bridge, Point(i, j));
+                content[j][i].setTexture(textures["bridge"]);
+            }
+            else if (j % (height - 1) == 0 || i % (width - 1) == 0){
+                content[j][i].setTile(currentPosition, tileSize, TileType::water, Point(i, j));
+                content[j][i].setFillColor(sf::Color::Blue);
+                content[j][i].setTexture(textures["water"]);
+            }
+            else{
+                content[j][i].setTile(currentPosition, tileSize, TileType::land, Point(i, j));
+                content[j][i].setTexture(textures["grass"]);
+            }
+            if(content[j][i].getEntity() != nullptr){
+                Entity* tempPtr = content[j][i].getEntity();
+                content[j][i].setEntity(nullptr);
+                delete tempPtr;
+            }
         }
         currentPosition.x = startingPosition.x;
-        currentPosition.y += tileSize.y + 5.f;
+        currentPosition.y += tileSize.y;
     }
     mouseLocation = Point(4,4);
     catLocation = Point(2,5);
     Entity *pEntity = new Entity(EntityType::Mouse, mouseLocation);
-    pEntity->setFillColor(sf::Color::Red);
-    pEntity->setRadius(25);
+    pEntity->setRadius(35);
+    pEntity->setTexture(textures["mouse"]);
     content[mouseLocation.y][mouseLocation.x].setEntity(pEntity);
     pEntity = new Entity(EntityType::Cat, catLocation);
-    pEntity->setFillColor(sf::Color::Black);
-    pEntity->setRadius(25);
+    pEntity->setRadius(35);
+    pEntity->setTexture(textures["cat"]);
     content[catLocation.y][catLocation.x].setEntity(pEntity);
 }
 
