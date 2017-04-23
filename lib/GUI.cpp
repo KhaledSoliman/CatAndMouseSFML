@@ -2,13 +2,13 @@
 #include "triggers.h"
 #include "Game.h"
 
-std::map<GUI::Menus, std::shared_ptr<GUI::Menu>> GUI::menus;
-std::map<const std::string, std::function<void()>> GUI::triggers;
-std::map<const std::string, std::shared_ptr<sf::Font>> GUI::fonts;
-std::vector<std::shared_ptr<sf::Text>> GUI::texts;
+std::map<GUI::Menus, GUI::Menu*> GUI::menus;
+std::map<std::string, std::function<void()>> GUI::triggers;
+std::map<std::string, sf::Font*> GUI::fonts;
+std::vector<sf::Text*> GUI::texts;
 
 void GUI::Init() {
-    std::shared_ptr<sf::Font> pFont(new sf::Font);
+    sf::Font* pFont = new sf::Font;
     pFont->loadFromFile("../assets/fonts/PoseiAOE.ttf");
     fonts["PoseiAOE"] = pFont;
     triggers["Quit"] = triggers::quit;
@@ -33,14 +33,14 @@ void GUI::Render(sf::RenderWindow &window) {
 
 void GUI::addText(const std::string &text, const std::string &font, unsigned int charSize, const sf::Color &color,
                   const sf::Vector2f &pos) {
-    std::shared_ptr<sf::Text> pText(new sf::Text(text, *fonts[font], charSize));
+    sf::Text* pText = new sf::Text(text, *fonts[font], charSize);
     pText->setFillColor(color);
     pText->setPosition(pos);
     texts.push_back(pText);
 }
 
 void GUI::createMainMenu() {
-    std::shared_ptr<Menu> pMenu(new Menu);
+    Menu* pMenu = new Menu;
     pMenu->setActive(true);
     pMenu->setText("sansation.ttf", 50, 0xFFFFFFFF);
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
@@ -54,7 +54,7 @@ void GUI::createMainMenu() {
 }
 
 void GUI::createModeMenu(){
-    std::shared_ptr<Menu> pMenu(new Menu);
+    Menu* pMenu = new Menu;
     pMenu->setActive(false);
     pMenu->setText("sansation.ttf", 50, 0xFFFFFFFF);
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
@@ -69,7 +69,7 @@ void GUI::createModeMenu(){
 }
 
 void GUI::createEndGameMenu(const std::string &message) {
-    std::shared_ptr<Menu> pMenu(new Menu);
+    Menu* pMenu = new Menu;
     pMenu->setActive(false);
     pMenu->setText("sansation.ttf", 50, 0xFFFFFFFF);
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
@@ -82,6 +82,15 @@ void GUI::createEndGameMenu(const std::string &message) {
     pMenu->addButton("Quit");
     pMenu->createBackground();
     menus[Menus::EndGame] = pMenu;
+}
+
+void GUI::Destroy() {
+    for(auto element: menus)
+        delete element.second;
+    for(auto element: texts)
+        delete element;
+    for(auto element: fonts)
+        delete element.second;
 }
 
 GUI::Button::Button() : Text(), state(disabled), clickAble(false) {}
@@ -204,7 +213,7 @@ void GUI::Menu::createBackground() {
     background.setPosition(startingPosition-sf::Vector2f(25.f,25.f));
 }
 
-void GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
+bool GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
     for (auto element : buttons) {
         if (element->isMouseOver(mousePos)) {
             element->setState(disabled);
@@ -213,7 +222,7 @@ void GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
             element->trigger();
             element->setState(enabled);
             element->setFillColor(defaultColor);
-            break;
+            return true;
         }
     }
 }

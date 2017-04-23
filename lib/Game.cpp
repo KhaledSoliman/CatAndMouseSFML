@@ -40,10 +40,11 @@ void Game::Run() {
             if (event.type == sf::Event::Closed) {
                 window.close();
             } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                bool found = false;
                 for (auto element: GUI::menus)
                     if (element.second->isActive()){
-                        element.second->clickScan(window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y)));
-                        break;
+                        found = element.second->clickScan(window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y)));
+                        if(found) break;
                     }
                 while (window.pollEvent(event));
             } else if (event.type == sf::Event::MouseMoved) {

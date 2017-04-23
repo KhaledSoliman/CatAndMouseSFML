@@ -6,7 +6,6 @@
 #include "Game.h"
 
 namespace GL {
-
     struct Point {
         int x, y;
 
@@ -18,20 +17,17 @@ namespace GL {
             return (RHS.x == x && RHS.y == y);
         };
 
-        Point& operator=(const Point& RHS){
+        Point &operator=(const Point &RHS) {
             x = RHS.x;
             y = RHS.y;
             return *this;
         }
     };
 
-
     enum class EntityType {
         Mouse,
         Cat
     };
-
-
     enum class TileType {
         water,
         land,
@@ -46,14 +42,29 @@ namespace GL {
 
     class Entity : public sf::CircleShape {
     public:
-        Entity(EntityType entityType, Point position);
+        Entity(EntityType entityType);
 
         EntityType getType() const;
 
         void draw(sf::RenderWindow &) const;
 
+        void incrementScore();
+
+        unsigned int getScore();
+
+        void resetScore();
+
+        void updatePosition(Point);
+
+        Point generateRandomPosition() const;
+
+        Point getWorldPosition() const;
+
+        void resetWorldPosition();
+
     private:
         Point coords;
+        unsigned int score;
         EntityType type;
     };
 
@@ -62,9 +73,9 @@ namespace GL {
     public:
         Tile() {}
 
-        void setTile(const sf::Vector2f &,const sf::Vector2f&, TileType,Point);
+        void setTile(const sf::Vector2f &, const sf::Vector2f &, TileType, Point);
 
-        Entity* getEntity();
+        Entity *getEntity();
 
         void setEntity(Entity *);
 
@@ -74,7 +85,7 @@ namespace GL {
 
         void draw(sf::RenderWindow &) const;
 
-        ~Tile(){
+        ~Tile() {
             delete occupant;
         }
 
@@ -88,9 +99,11 @@ namespace GL {
     public:
         World() : active(false) {}
 
-        World(const unsigned int, const unsigned int, const sf::Vector2f&, const sf::Vector2f&);
+        World(const unsigned int, const unsigned int, const sf::Vector2f &, const sf::Vector2f &);
 
         void populateWorld();
+
+        void createEntities();
 
         void moveEntity(EntityType, Direction);
 
@@ -98,9 +111,15 @@ namespace GL {
 
         void setActive(bool);
 
-        void endGame(const std::string&);
+        bool isActive() const;
+
+        void endGame(const std::string &);
 
         void draw(sf::RenderWindow &);
+
+        unsigned int getHeight() const;
+
+        unsigned int getWidth() const;
 
         ~World() {
             for (int j = 0; j < height; j++) {
@@ -121,12 +140,11 @@ namespace GL {
 
     void Init();
 
-    //TODO:: Destroy some crap
+    void Destroy();
 
     extern World world;
-    extern Point mouseLocation;
-    extern Point catLocation;
-    extern std::map<std::string, const sf::Texture*> textures;
+    extern std::map<std::string, const sf::Texture *> textures;
+    extern std::map<EntityType, Entity *> entities;
 };
 
 

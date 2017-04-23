@@ -20,6 +20,7 @@ void triggers::soloPlay() {
     GUI::menus[GUI::Menus::Modes]->setActive(false);
     Game::gameMode = 0;
     Game::currentEntity = 0;
+    GL::world.createEntities();
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
@@ -28,6 +29,7 @@ void triggers::multiPlay(){
     GUI::menus[GUI::Menus::Modes]->setActive(false);
     Game::gameMode = 1;
     Game::currentEntity = 0;
+    GL::world.createEntities();
     GL::world.populateWorld();
     GL::world.setActive(true);
 }

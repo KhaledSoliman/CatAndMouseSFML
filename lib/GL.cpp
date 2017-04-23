@@ -1,20 +1,21 @@
 #include "GL.h"
 #include "GUI.h"
 
-GL::Point GL::mouseLocation(4, 4);
-GL::Point GL::catLocation(2, 5);
-GL::World GL::world(9, 9, sf::Vector2f(600.f, 50.f), sf::Vector2f(80.f, 80.f));
-std::map<std::string, const sf::Texture*> GL::textures;
+GL::World GL::world(12, 12, sf::Vector2f(600.f, 50.f), sf::Vector2f(80.f, 80.f));
+std::map<std::string, const sf::Texture *> GL::textures;
+std::map<GL::EntityType, GL::Entity *> GL::entities;
+
 /*
  * Functions Native to the Namespace.
  */
 
 void GL::Render(sf::RenderWindow &window) {
-    world.draw(window);
+    if (world.isActive())
+        world.draw(window);
 }
 
-void GL::Init(){
-    sf::Texture* pTexture = new sf::Texture;
+void GL::Init() {
+    sf::Texture *pTexture = new sf::Texture;
     pTexture->loadFromFile("../assets/textures/mouse_texture.png");
     textures["mouse"] = pTexture;
     pTexture = new sf::Texture;
@@ -30,6 +31,14 @@ void GL::Init(){
     pTexture->loadFromFile("../assets/textures/bridge_texture.jpg");
     textures["bridge"] = pTexture;
 }
+
+void GL::Destroy() {
+    for (auto element: GL::textures)
+        delete element.second;
+    for (auto element: entities)
+        delete element.second;
+}
+
 /*
  * Tile Class Definition
  */
@@ -71,8 +80,9 @@ void GL::Tile::draw(sf::RenderWindow &window) const {
  * Entity Class Definition
  */
 
-GL::Entity::Entity(EntityType entityType, Point position) : coords(position) {
+GL::Entity::Entity(EntityType entityType) {
     type = entityType;
+    coords = generateRandomPosition();
 }
 
 GL::EntityType GL::Entity::getType() const {
@@ -83,6 +93,42 @@ void GL::Entity::draw(sf::RenderWindow &window) const {
     window.draw(*this);
 };
 
+void GL::Entity::incrementScore() {
+    score++;
+}
+
+unsigned int GL::Entity::getScore() {
+    return score;
+}
+
+void GL::Entity::resetScore() {
+    score = 0;
+}
+
+void GL::Entity::updatePosition(Point pos) {
+    coords = pos;
+}
+
+GL::Point GL::Entity::getWorldPosition() const {
+    return coords;
+}
+
+GL::Point GL::Entity::generateRandomPosition() const {
+    Point location;
+    std::vector<Point> occupiedLocations;
+    for (auto element: entities){
+        occupiedLocations.push_back(element.second->getWorldPosition());
+    }
+    do {
+        location = Point(rand() % (world.getHeight() - 2), rand() % (world.getWidth() - 2));
+    } while (std::find(occupiedLocations.begin(),occupiedLocations.end(),location) != occupiedLocations.end());
+    return location;
+}
+
+void GL::Entity::resetWorldPosition() {
+    coords = generateRandomPosition();
+}
+
 /*
  * World Class Definition
  */
@@ -91,102 +137,98 @@ void GL::World::setActive(bool boolean) {
     active = boolean;
 }
 
+bool GL::World::isActive() const {
+    return active;
+}
+
 void GL::World::populateWorld() {
     sf::Vector2f currentPosition = startingPosition;
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             currentPosition.x += tileSize.x;
-            if ((j == ((height - 1) / 2)) && (i == (width - 1))){
+            if ((j == ((height - 1) / 2)) && (i == (width - 1))) {
                 content[j][i].setTile(currentPosition, tileSize, TileType::bridge, Point(i, j));
                 content[j][i].setTexture(textures["bridge"]);
-            }
-            else if (j % (height - 1) == 0 || i % (width - 1) == 0){
+            } else if (j % (height - 1) == 0 || i % (width - 1) == 0) {
                 content[j][i].setTile(currentPosition, tileSize, TileType::water, Point(i, j));
                 content[j][i].setFillColor(sf::Color::Blue);
                 content[j][i].setTexture(textures["water"]);
-            }
-            else{
+            } else {
                 content[j][i].setTile(currentPosition, tileSize, TileType::land, Point(i, j));
                 content[j][i].setTexture(textures["grass"]);
             }
-            if(content[j][i].getEntity() != nullptr){
-                Entity* tempPtr = content[j][i].getEntity();
-                content[j][i].setEntity(nullptr);
-                delete tempPtr;
-            }
+            content[j][i].setEntity(nullptr);
         }
         currentPosition.x = startingPosition.x;
         currentPosition.y += tileSize.y;
     }
-    mouseLocation = Point(4,4);
-    catLocation = Point(2,5);
-    Entity *pEntity = new Entity(EntityType::Mouse, mouseLocation);
+    for(auto element: entities){
+        element.second->resetWorldPosition();
+        content[element.second->getWorldPosition().y][element.second->getWorldPosition().x].setEntity(element.second);
+    }
+}
+
+void GL::World::createEntities() {
+    Entity *pEntity = new Entity(EntityType::Mouse);
     pEntity->setRadius(35);
     pEntity->setTexture(textures["mouse"]);
-    content[mouseLocation.y][mouseLocation.x].setEntity(pEntity);
-    pEntity = new Entity(EntityType::Cat, catLocation);
+    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
+    entities[EntityType::Mouse] = pEntity;
+    pEntity = new Entity(EntityType::Cat);
     pEntity->setRadius(35);
     pEntity->setTexture(textures["cat"]);
-    content[catLocation.y][catLocation.x].setEntity(pEntity);
+    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
+    entities[EntityType::Cat] = pEntity;
 }
 
 void GL::World::moveEntity(EntityType type, Direction direction) {
-    Point *newLocation;
-    Point previousLocation;
+    Point newLocation;
     Entity *pEntity;
-    switch (type) {
-        case EntityType::Mouse:
-            previousLocation = mouseLocation;
-            newLocation = &mouseLocation;
-            break;
-        case EntityType::Cat:
-            previousLocation = catLocation;
-            newLocation = &catLocation;
-            break;
-    }
+    pEntity = entities[type];
+    Point previousLocation = pEntity->getWorldPosition();
     switch (direction) {
         case Direction::North:
-            newLocation->y = previousLocation.y - 1;
-            newLocation->x = previousLocation.x;
+            newLocation.y = previousLocation.y - 1;
+            newLocation.x = previousLocation.x;
             break;
         case Direction::East:
-            newLocation->x = previousLocation.x + 1;
-            newLocation->y = previousLocation.y;
+            newLocation.x = previousLocation.x + 1;
+            newLocation.y = previousLocation.y;
             break;
         case Direction::West:
-            newLocation->x = previousLocation.x - 1;
-            newLocation->y = previousLocation.y;
+            newLocation.x = previousLocation.x - 1;
+            newLocation.y = previousLocation.y;
             break;
         case Direction::South:
-            newLocation->y = previousLocation.y + 1;
-            newLocation->x = previousLocation.x;
+            newLocation.y = previousLocation.y + 1;
+            newLocation.x = previousLocation.x;
             break;
     }
-    pEntity = content[previousLocation.y][previousLocation.x].getEntity();
+    pEntity->updatePosition(newLocation);
     content[previousLocation.y][previousLocation.x].setEntity(nullptr);
-    examineLocal(content[newLocation->y][newLocation->x], pEntity->getType());
-    content[newLocation->y][newLocation->x].setEntity(pEntity);
+    examineLocal(content[newLocation.y][newLocation.x], pEntity->getType());
+    content[newLocation.y][newLocation.x].setEntity(pEntity);
 }
 
-void GL::World::examineLocal(Tile location, EntityType Entity){
-    if(Entity == EntityType::Cat){
-        if(location.getType() == TileType::water){
+void GL::World::examineLocal(Tile location, EntityType Entity) {
+    if (Entity == EntityType::Cat) {
+        if (location.getType() == TileType::water) {
             endGame("The cat has drowned :(");
-        }else if(location.getWorldPosition() == mouseLocation){
+        } else if (location.getWorldPosition() == entities[EntityType::Mouse]->getWorldPosition()) {
             endGame("The cat has eaten the mouse :(");
         }
     } else {
-        if(location.getWorldPosition() == catLocation){
+        if (location.getWorldPosition() == entities[EntityType::Cat]->getWorldPosition()) {
             endGame("The mouse has fed it self to the cat??");
-        }else if(location.getType() == TileType::water){
+        } else if (location.getType() == TileType::water) {
             endGame("The mouse has jumped in the water lol!");
-        }else if (location.getType() == TileType::bridge){
+        } else if (location.getType() == TileType::bridge) {
             endGame("The mouse has escaped to god knows where!");
         }
     }
 }
 
-void GL::World::endGame(const std::string& message) {
+void GL::World::endGame(const std::string &message) {
     setActive(false);
     GUI::createEndGameMenu(message);
     GUI::menus[GUI::Menus::EndGame]->setActive(true);
@@ -202,8 +244,15 @@ GL::World::World(unsigned int newHeight, unsigned int newWidth, const sf::Vector
 }
 
 void GL::World::draw(sf::RenderWindow &window) {
-    if (active)
-        for (int j = 0; j < height; j++)
-            for (int i = 0; i < width; i++)
-                content[j][i].draw(window);
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++)
+            content[j][i].draw(window);
+}
+
+unsigned int GL::World::getHeight() const {
+    return height;
+}
+
+unsigned int GL::World::getWidth() const {
+    return width;
 }

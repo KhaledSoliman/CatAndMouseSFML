@@ -65,7 +65,7 @@ namespace GUI {
 
         void draw(sf::RenderWindow &) const;
 
-        void clickScan(const sf::Vector2f &);
+        bool clickScan(const sf::Vector2f &);
 
         void hoveringScan(const sf::Vector2f &);
 
@@ -123,10 +123,12 @@ namespace GUI {
 
     void createEndGameMenu(const std::string&);
 
-    extern std::map<Menus, std::shared_ptr<GUI::Menu>> menus;
-    extern std::map<const std::string, std::function<void()>> triggers;
-    extern std::map<const std::string, std::shared_ptr<sf::Font>> fonts;
-    extern std::vector<std::shared_ptr<sf::Text>> texts;
+    void Destroy();
+
+    extern std::map<Menus, GUI::Menu*> menus;
+    extern std::map<std::string, std::function<void()>> triggers;
+    extern std::map<std::string, sf::Font*> fonts;
+    extern std::vector<sf::Text*> texts;
 };
 
 
