@@ -30,6 +30,7 @@ void GL::Init() {
     pTexture = new sf::Texture;
     pTexture->loadFromFile("../assets/textures/bridge_texture.jpg");
     textures["bridge"] = pTexture;
+    world.createEntities();
 }
 
 void GL::Destroy() {
@@ -120,7 +121,7 @@ GL::Point GL::Entity::generateRandomPosition() const {
         occupiedLocations.push_back(element.second->getWorldPosition());
     }
     do {
-        location = Point(rand() % (world.getHeight() - 2), rand() % (world.getWidth() - 2));
+        location = Point(rand() % (world.getHeight() - 4) + 2, rand() % (world.getWidth() - 4) + 2);
     } while (std::find(occupiedLocations.begin(),occupiedLocations.end(),location) != occupiedLocations.end());
     return location;
 }
@@ -213,24 +214,33 @@ void GL::World::moveEntity(EntityType type, Direction direction) {
 void GL::World::examineLocal(Tile location, EntityType Entity) {
     if (Entity == EntityType::Cat) {
         if (location.getType() == TileType::water) {
+            entities[GL::EntityType::Mouse]->incrementScore();
             endGame("The cat has drowned :(");
         } else if (location.getWorldPosition() == entities[EntityType::Mouse]->getWorldPosition()) {
+            entities[GL::EntityType::Cat]->incrementScore();
             endGame("The cat has eaten the mouse :(");
         }
     } else {
         if (location.getWorldPosition() == entities[EntityType::Cat]->getWorldPosition()) {
+            entities[GL::EntityType::Cat]->incrementScore();
             endGame("The mouse has fed it self to the cat??");
         } else if (location.getType() == TileType::water) {
+            entities[GL::EntityType::Cat]->incrementScore();
             endGame("The mouse has jumped in the water lol!");
         } else if (location.getType() == TileType::bridge) {
+            entities[GL::EntityType::Mouse]->incrementScore();
             endGame("The mouse has escaped to god knows where!");
+
         }
     }
 }
 
 void GL::World::endGame(const std::string &message) {
     setActive(false);
-    GUI::createEndGameMenu(message);
+    GUI::menus[GUI::Menus::EndGame]->addText(message);
+    GUI::menus[GUI::Menus::EndGame]->addText("Mouse Score: " + std::to_string(GL::entities[GL::EntityType::Mouse]->getScore()));
+    GUI::menus[GUI::Menus::EndGame]->addText("Cat Score: " + std::to_string(GL::entities[GL::EntityType::Cat]->getScore()));
+    GUI::menus[GUI::Menus::EndGame]->createBackground();
     GUI::menus[GUI::Menus::EndGame]->setActive(true);
 }
 

@@ -20,6 +20,7 @@ void GUI::Init() {
     triggers["Back to Main Menu"] = triggers::backToMain;
     createMainMenu();
     createModeMenu();
+    createEndGameMenu();
 }
 
 void GUI::Render(sf::RenderWindow &window) {
@@ -68,7 +69,7 @@ void GUI::createModeMenu(){
     menus[Menus::Modes] = pMenu;
 }
 
-void GUI::createEndGameMenu(const std::string &message) {
+void GUI::createEndGameMenu() {
     Menu* pMenu = new Menu;
     pMenu->setActive(false);
     pMenu->setText("sansation.ttf", 50, 0xFFFFFFFF);
@@ -76,7 +77,6 @@ void GUI::createEndGameMenu(const std::string &message) {
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
     pMenu->setPosition(sf::Vector2f(-1600.f, 300.f));
-    pMenu->addText(message);
     pMenu->addButton("Restart");
     pMenu->addButton("Back to Main Menu");
     pMenu->addButton("Quit");
@@ -194,6 +194,15 @@ void GUI::Menu::setPosition(const sf::Vector2f &pos) {
 
 void GUI::Menu::setInc(const sf::Vector2f &inc) {
     incVector = inc;
+}
+
+void GUI::Menu::emptyText(){
+    for(auto element: texts){
+        delete element;
+        currentPosition -= incVector;
+    }
+    texts.clear();
+    createBackground();
 }
 
 void GUI::Menu::createBackground() {

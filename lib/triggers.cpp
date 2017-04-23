@@ -20,7 +20,9 @@ void triggers::soloPlay() {
     GUI::menus[GUI::Menus::Modes]->setActive(false);
     Game::gameMode = 0;
     Game::currentEntity = 0;
-    GL::world.createEntities();
+    for( auto element:GL::entities )
+    { element.second-> resetScore();
+    }
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
@@ -29,18 +31,22 @@ void triggers::multiPlay(){
     GUI::menus[GUI::Menus::Modes]->setActive(false);
     Game::gameMode = 1;
     Game::currentEntity = 0;
-    GL::world.createEntities();
+    for( auto element:GL::entities )
+    { element.second-> resetScore();
+    }
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
 void triggers::restartGame() {
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
+    GUI::menus[GUI::Menus::EndGame]->emptyText();
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
 void triggers::backToMain() {
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
+    GUI::menus[GUI::Menus::EndGame]->emptyText();
     GUI::menus[GUI::Menus::Main]->setActive(true);
 }

@@ -85,6 +85,8 @@ namespace GUI {
 
         void setInc(const sf::Vector2f &);
 
+        void emptyText();
+
         ~Menu() {
             for (auto element: buttons) {
                 delete element;
@@ -121,7 +123,7 @@ namespace GUI {
 
     void createModeMenu();
 
-    void createEndGameMenu(const std::string&);
+    void createEndGameMenu();
 
     void Destroy();
 
