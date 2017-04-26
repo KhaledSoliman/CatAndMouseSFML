@@ -34,10 +34,12 @@ void GL::Init() {
 }
 
 void GL::Destroy() {
-    for (auto element: GL::textures)
-        delete element.second;
     for (auto element: entities)
         delete element.second;
+    for (auto element: textures)
+        delete element.second;
+    entities.clear();
+    textures.clear();
 }
 
 /*
@@ -71,10 +73,10 @@ void GL::Tile::setTile(const sf::Vector2f &pos, const sf::Vector2f &size, TileTy
     type = tileType;
 }
 
-void GL::Tile::draw(sf::RenderWindow &window) const {
+void GL::Tile::draw(sf::RenderWindow &window) {
     window.draw(*this);
-    if (occupant != nullptr)
-        occupant->draw(window);
+    for(auto element: entities)
+        element.second->draw(window);
 }
 
 /*
@@ -90,7 +92,7 @@ GL::EntityType GL::Entity::getType() const {
     return type;
 }
 
-void GL::Entity::draw(sf::RenderWindow &window) const {
+void GL::Entity::draw(sf::RenderWindow &window) {
     window.draw(*this);
 };
 
@@ -117,12 +119,12 @@ GL::Point GL::Entity::getWorldPosition() const {
 GL::Point GL::Entity::generateRandomPosition() const {
     Point location;
     std::vector<Point> occupiedLocations;
-    for (auto element: entities){
+    for (auto element: entities) {
         occupiedLocations.push_back(element.second->getWorldPosition());
     }
     do {
         location = Point(rand() % (world.getHeight() - 4) + 2, rand() % (world.getWidth() - 4) + 2);
-    } while (std::find(occupiedLocations.begin(),occupiedLocations.end(),location) != occupiedLocations.end());
+    } while (std::find(occupiedLocations.begin(), occupiedLocations.end(), location) != occupiedLocations.end());
     return location;
 }
 
@@ -143,6 +145,26 @@ bool GL::World::isActive() const {
 }
 
 void GL::World::populateWorld() {
+    for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++)
+            content[j][i].setEntity(nullptr);
+    for (auto element: entities) {
+        element.second->resetWorldPosition();
+        content[element.second->getWorldPosition().y][element.second->getWorldPosition().x].setEntity(element.second);
+    }
+}
+
+void GL::World::createEntities() {
+    Entity *pEntity = new Entity(EntityType::Mouse);
+    pEntity->setRadius(35);
+    pEntity->setTexture(textures["mouse"]);
+    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
+    entities[EntityType::Mouse] = pEntity;
+    pEntity = new Entity(EntityType::Cat);
+    pEntity->setRadius(35);
+    pEntity->setTexture(textures["cat"]);
+    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
+    entities[EntityType::Cat] = pEntity;
     sf::Vector2f currentPosition = startingPosition;
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
@@ -163,23 +185,6 @@ void GL::World::populateWorld() {
         currentPosition.x = startingPosition.x;
         currentPosition.y += tileSize.y;
     }
-    for(auto element: entities){
-        element.second->resetWorldPosition();
-        content[element.second->getWorldPosition().y][element.second->getWorldPosition().x].setEntity(element.second);
-    }
-}
-
-void GL::World::createEntities() {
-    Entity *pEntity = new Entity(EntityType::Mouse);
-    pEntity->setRadius(35);
-    pEntity->setTexture(textures["mouse"]);
-    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
-    entities[EntityType::Mouse] = pEntity;
-    pEntity = new Entity(EntityType::Cat);
-    pEntity->setRadius(35);
-    pEntity->setTexture(textures["cat"]);
-    content[pEntity->getWorldPosition().y][pEntity->getWorldPosition().x].setEntity(pEntity);
-    entities[EntityType::Cat] = pEntity;
 }
 
 void GL::World::moveEntity(EntityType type, Direction direction) {
@@ -237,10 +242,11 @@ void GL::World::examineLocal(Tile location, EntityType Entity) {
 
 void GL::World::endGame(const std::string &message) {
     setActive(false);
-    GUI::menus[GUI::Menus::EndGame]->addText(message);
-    GUI::menus[GUI::Menus::EndGame]->addText("Mouse Score: " + std::to_string(GL::entities[GL::EntityType::Mouse]->getScore()));
-    GUI::menus[GUI::Menus::EndGame]->addText("Cat Score: " + std::to_string(GL::entities[GL::EntityType::Cat]->getScore()));
-    GUI::menus[GUI::Menus::EndGame]->createBackground();
+    GUI::addText(message, "sansation", 50, sf::Color::Green, sf::Vector2f(850.f, 300.f));
+    GUI::addText("Mouse Score: " + std::to_string(GL::entities[GL::EntityType::Mouse]->getScore()), "sansation", 50,
+                 sf::Color::Green, sf::Vector2f(850.f, 400.f));
+    GUI::addText("Cat Score: " + std::to_string(GL::entities[GL::EntityType::Cat]->getScore()), "sansation", 50,
+                 sf::Color::Green, sf::Vector2f(850.f, 500.f));
     GUI::menus[GUI::Menus::EndGame]->setActive(true);
 }
 

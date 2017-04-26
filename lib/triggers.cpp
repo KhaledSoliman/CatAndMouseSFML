@@ -2,8 +2,8 @@
 #include "GUI.h"
 #include "Game.h"
 
-void triggers::quit(){
-   Game::window.close();
+void triggers::quit() {
+    Game::game.quit();
 }
 
 void triggers::startGame() {
@@ -18,35 +18,37 @@ void triggers::back() {
 
 void triggers::soloPlay() {
     GUI::menus[GUI::Menus::Modes]->setActive(false);
-    Game::gameMode = 0;
-    Game::currentEntity = 0;
-    for( auto element:GL::entities )
-    { element.second-> resetScore();
+    Game::game.setGameMode(0);
+    for (auto element:GL::entities) {
+        element.second->resetScore();
     }
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
-void triggers::multiPlay(){
+void triggers::multiPlay() {
     GUI::menus[GUI::Menus::Modes]->setActive(false);
-    Game::gameMode = 1;
-    Game::currentEntity = 0;
-    for( auto element:GL::entities )
-    { element.second-> resetScore();
+    Game::game.setGameMode(1);
+    for (auto element:GL::entities) {
+        element.second->resetScore();
     }
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
 void triggers::restartGame() {
-    GUI::menus[GUI::Menus::EndGame]->emptyText();
+    for (auto element: GUI::texts)
+        delete element;
+    GUI::texts.clear();
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
 void triggers::backToMain() {
-    GUI::menus[GUI::Menus::EndGame]->emptyText();
+    for (auto element: GUI::texts)
+        delete element;
+    GUI::texts.clear();
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
     GUI::menus[GUI::Menus::Main]->setActive(true);
 }

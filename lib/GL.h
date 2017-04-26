@@ -46,7 +46,7 @@ namespace GL {
 
         EntityType getType() const;
 
-        void draw(sf::RenderWindow &) const;
+        void draw(sf::RenderWindow &);
 
         void incrementScore();
 
@@ -71,7 +71,7 @@ namespace GL {
 
     class Tile : public sf::RectangleShape {
     public:
-        Tile() {}
+        Tile() : occupant(NULL) {}
 
         void setTile(const sf::Vector2f &, const sf::Vector2f &, TileType, Point);
 
@@ -83,11 +83,7 @@ namespace GL {
 
         Point getWorldPosition() const;
 
-        void draw(sf::RenderWindow &) const;
-
-        ~Tile() {
-            delete occupant;
-        }
+        void draw(sf::RenderWindow &);
 
     private:
         Entity *occupant;
@@ -123,7 +119,7 @@ namespace GL {
 
         ~World() {
             for (int j = 0; j < height; j++) {
-                delete[] content[height];
+                delete[] content[j];
             }
         }
 

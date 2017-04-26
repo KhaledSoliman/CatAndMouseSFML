@@ -1,13 +1,8 @@
 #include "lib/Game.h"
-#include "lib/GUI.h"
-
 
 int main() {
-    Game::Init();
     GUI::Init();
     GL::Init();
-    Game::Run();
-    GL::Destroy();
-    GUI::Destroy();
+    Game::game.run();
     return EXIT_SUCCESS;
 }

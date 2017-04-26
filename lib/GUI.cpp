@@ -11,6 +11,9 @@ void GUI::Init() {
     sf::Font* pFont = new sf::Font;
     pFont->loadFromFile("../assets/fonts/PoseiAOE.ttf");
     fonts["PoseiAOE"] = pFont;
+    pFont = new sf::Font;
+    pFont->loadFromFile("../assets/fonts/sansation.ttf");
+    fonts["sansation"] = pFont;
     triggers["Quit"] = triggers::quit;
     triggers["New Game"] = triggers::startGame;
     triggers["Back"] = triggers::back;
@@ -61,7 +64,7 @@ void GUI::createModeMenu(){
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
-    pMenu->setPosition(sf::Vector2f(-1800.f, 150.f));
+    pMenu->setPosition(sf::Vector2f(-800.f, 150.f));
     pMenu->addButton("1 Player");
     pMenu->addButton("2 Players");
     pMenu->addButton("Back");
@@ -76,7 +79,7 @@ void GUI::createEndGameMenu() {
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
-    pMenu->setPosition(sf::Vector2f(-1600.f, 300.f));
+    pMenu->setPosition(sf::Vector2f(-600.f, 300.f));
     pMenu->addButton("Restart");
     pMenu->addButton("Back to Main Menu");
     pMenu->addButton("Quit");
@@ -91,6 +94,9 @@ void GUI::Destroy() {
         delete element;
     for(auto element: fonts)
         delete element.second;
+    menus.clear();
+    texts.clear();
+    fonts.clear();
 }
 
 GUI::Button::Button() : Text(), state(disabled), clickAble(false) {}
@@ -156,30 +162,32 @@ void GUI::Menu::setActive(bool flag) {
     if(active){
         sf::Time totalTime = sf::seconds(0.0f);
         sf::Time time = sf::seconds(0.5f);
-        sf::Vector2f offsetVector = sf::Vector2f(-2000.f,0.f);
-        while(totalTime < time){
+        sf::Time dt = sf::seconds(1.0f / 60.0f);
+        sf::Vector2f offsetVector = sf::Vector2f(-1000.f,0.f);
+        while(totalTime <= time){
             for(auto element: texts)
-                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+                element->move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
             for(auto element: buttons)
-                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
-            background.move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
-            Game::RenderFrame();
-            totalTime += Game::timePerFrame;
+                element->move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            background.move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            Game::game.renderFrame();
+            totalTime += dt;
         }
         active = flag;
     } else {
         active = flag;
         sf::Time totalTime = sf::seconds(0.0f);
         sf::Time time = sf::seconds(0.5f);
-        sf::Vector2f offsetVector = sf::Vector2f(2000.f,0.f);
-        while(totalTime < time){
+        sf::Time dt = sf::seconds(1.0f / 60.0f);
+        sf::Vector2f offsetVector = sf::Vector2f(1000.f,0.f);
+        while(totalTime <= time){
             for(auto element: texts)
-                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+                element->move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
             for(auto element: buttons)
-                element->move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
-            background.move((Game::timePerFrame.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
-            Game::RenderFrame();
-            totalTime += Game::timePerFrame;
+                element->move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            background.move((dt.asSeconds()/time.asSeconds()) * offsetVector.x, 0);
+            Game::game.renderFrame();
+            totalTime += dt;
         }
     }
 }
@@ -225,12 +233,11 @@ void GUI::Menu::createBackground() {
 bool GUI::Menu::clickScan(const sf::Vector2f &mousePos) {
     for (auto element : buttons) {
         if (element->isMouseOver(mousePos)) {
-            element->setState(disabled);
+            element->setState(enabled);
             element->setFillColor(clickColor);
             buttonClickSound.sound.play();
-            element->trigger();
-            element->setState(enabled);
             element->setFillColor(defaultColor);
+            element->trigger();
             return true;
         }
     }

@@ -1,59 +1,54 @@
+#include <iostream>
 #include "Game.h"
-#include "GUI.h"
 
-Game::State Game::gameState;
-sf::RenderWindow Game::window;
-sf::Clock Game::clock;
-sf::Time Game::timePerFrame;
-Game::Background Game::background;
-int Game::gameMode;
-int Game::currentEntity;
+Game::GameEngine Game::game;
 
-void Game::Init() {
-    background.setBG("../assets/common/bg-1.jpg", window);
+Game::GameEngine::GameEngine() : currentEntity(0) {
 }
 
-void Game::RenderWindow() {
-    window.create(gameState.windowMode, gameState.windowTitle, gameState.windowStyle,
-                  gameState.contextSettings);
-    window.setVerticalSyncEnabled(gameState.verticalSync);
-    window.setFramerateLimit(gameState.frameLimit);
-    window.setActive(gameState.active);
+void Game::GameEngine::renderWindow() {
+    gameWindow.window.create(gameWindow.windowMode, gameWindow.windowTitle, gameWindow.windowStyle,
+                             gameWindow.contextSettings);
+    gameWindow.window.setVerticalSyncEnabled(gameWindow.verticalSync);
+    gameWindow.window.setFramerateLimit(gameWindow.frameLimit);
+    gameWindow.window.setActive(gameWindow.active);
+    background.setBG("../assets/common/bg-1.jpg", gameWindow.window);
 }
 
-void Game::RenderFrame() {
+void Game::GameEngine::renderFrame() {
     clock.restart();
-    window.clear();
-    window.draw(background.image);
-    GUI::Render(window);
-    GL::Render(window);
-    window.display();
+    background.draw(gameWindow.window);
+    GUI::Render(gameWindow.window);
+    GL::Render(gameWindow.window);
+    gameWindow.window.display();
     timePerFrame = clock.getElapsedTime();
 }
 
-void Game::Run() {
-    RenderWindow();
-    Init();
-    while (window.isOpen()) {
+void Game::GameEngine::run() {
+    renderWindow();
+    while (gameWindow.window.isOpen()) {
         sf::Event event;
-        while (window.pollEvent(event)) {
+        while (gameWindow.window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                window.close();
+                quit();
             } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 bool found = false;
                 for (auto element: GUI::menus)
-                    if (element.second->isActive()){
-                        found = element.second->clickScan(window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y)));
-                        if(found) break;
+                    if (element.second->isActive()) {
+                        found = element.second->clickScan(
+                                gameWindow.window.mapPixelToCoords(
+                                        sf::Vector2i(event.mouseButton.x, event.mouseButton.y)));
+                        if (found) break;
                     }
-                while (window.pollEvent(event));
+                while (gameWindow.window.pollEvent(event));
             } else if (event.type == sf::Event::MouseMoved) {
                 for (auto element: GUI::menus)
                     if (element.second->isActive())
                         element.second->hoveringScan(
-                                window.mapPixelToCoords(sf::Vector2i(event.mouseMove.x, event.mouseMove.y)));
+                                gameWindow.window.mapPixelToCoords(sf::Vector2i(event.mouseMove.x, event.mouseMove.y)));
             } else if (event.type == sf::Event::KeyPressed) {
-                bool flag;
+                if (GL::world.isActive()) {
+                    bool flag;
                     switch (event.key.code) {
                         case sf::Keyboard::W:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::North);
@@ -75,15 +70,53 @@ void Game::Run() {
                             flag = false;
                             break;
                     }
-                if(flag){
-                    if(gameMode){
-                        currentEntity  = 1 - currentEntity;
-                    }else{
-                        GL::world.moveEntity(GL::EntityType::Cat, static_cast<GL::Direction>(rand() % 4));
+                    if (flag) {
+                        if (gameMode) {
+                            currentEntity = 1 - currentEntity;
+                        } else {
+                            if (GL::world.isActive())
+                                GL::world.moveEntity(GL::EntityType::Cat, static_cast<GL::Direction>(rand() % 4));
+                        }
                     }
                 }
+
             }
-            RenderFrame();
+            renderFrame();
         }
     }
+}
+
+void Game::GameEngine::quit() {
+    GL::Destroy();
+    GUI::Destroy();
+    gameWindow.window.close();
+}
+
+sf::Time Game::GameEngine::getFrameTime() const {
+    return timePerFrame;
+}
+
+void Game::GameEngine::setGameMode(int mode) {
+    gameMode = mode;
+}
+
+int Game::GameEngine::getGameMode() const {
+    return gameMode;
+}
+
+void Game::GameEngine::setCurrentEntity(int entityType) {
+    currentEntity = entityType;
+}
+
+int Game::GameEngine::getCurrentEntity() const {
+    return currentEntity;
+}
+
+void Game::GameEngine::setBackground(const std::string &path) {
+    background.setBG(path, gameWindow.window);
+}
+
+void Game::GameEngine::setBackground(const sf::Color &color) {
+    background.useImage = false;
+    background.backgroundColor = color;
 }
