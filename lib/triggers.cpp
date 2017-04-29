@@ -37,18 +37,14 @@ void triggers::multiPlay() {
 }
 
 void triggers::restartGame() {
-    for (auto element: GUI::texts)
-        delete element;
-    GUI::texts.clear();
+    GUI::menus[GUI::Menus::EndGame]->emptyText();
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
     GL::world.populateWorld();
     GL::world.setActive(true);
 }
 
 void triggers::backToMain() {
-    for (auto element: GUI::texts)
-        delete element;
-    GUI::texts.clear();
+    GUI::menus[GUI::Menus::EndGame]->emptyText();
     GUI::menus[GUI::Menus::EndGame]->setActive(false);
     GUI::menus[GUI::Menus::Main]->setActive(true);
 }

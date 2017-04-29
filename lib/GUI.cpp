@@ -79,7 +79,7 @@ void GUI::createEndGameMenu() {
     pMenu->setHover("Main_Menu_Hover_Effect.wav", 0xFF0000FF);
     pMenu->setClick("Main_Menu_Click_Effect.wav", 0xFFFF00FF);
     pMenu->setInc(sf::Vector2f(0.f, 100.f));
-    pMenu->setPosition(sf::Vector2f(-600.f, 300.f));
+    pMenu->setPosition(sf::Vector2f(-600.f, 100.f));
     pMenu->addButton("Restart");
     pMenu->addButton("Back to Main Menu");
     pMenu->addButton("Quit");

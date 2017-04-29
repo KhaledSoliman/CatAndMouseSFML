@@ -51,18 +51,22 @@ void Game::GameEngine::run() {
                     bool flag;
                     switch (event.key.code) {
                         case sf::Keyboard::W:
+                        case sf::Keyboard::Up:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::North);
                             flag = true;
                             break;
                         case sf::Keyboard::D:
+                        case sf::Keyboard::Right:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::East);
                             flag = true;
                             break;
                         case sf::Keyboard::A:
+                        case sf::Keyboard::Left:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::West);
                             flag = true;
                             break;
                         case sf::Keyboard::S:
+                        case sf::Keyboard::Down:
                             GL::world.moveEntity(static_cast<GL::EntityType>(currentEntity), GL::Direction::South);
                             flag = true;
                             break;

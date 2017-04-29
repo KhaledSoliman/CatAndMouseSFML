@@ -242,11 +242,10 @@ void GL::World::examineLocal(Tile location, EntityType Entity) {
 
 void GL::World::endGame(const std::string &message) {
     setActive(false);
-    GUI::addText(message, "sansation", 50, sf::Color::Green, sf::Vector2f(850.f, 300.f));
-    GUI::addText("Mouse Score: " + std::to_string(GL::entities[GL::EntityType::Mouse]->getScore()), "sansation", 50,
-                 sf::Color::Green, sf::Vector2f(850.f, 400.f));
-    GUI::addText("Cat Score: " + std::to_string(GL::entities[GL::EntityType::Cat]->getScore()), "sansation", 50,
-                 sf::Color::Green, sf::Vector2f(850.f, 500.f));
+    GUI::menus[GUI::Menus::EndGame]->addText(message);
+    GUI::menus[GUI::Menus::EndGame]->addText("Mouse Score: " + std::to_string(GL::entities[GL::EntityType::Mouse]->getScore()));
+    GUI::menus[GUI::Menus::EndGame]->addText("Cat Score: " + std::to_string(GL::entities[GL::EntityType::Cat]->getScore()));
+    GUI::menus[GUI::Menus::EndGame]->createBackground();
     GUI::menus[GUI::Menus::EndGame]->setActive(true);
 }
 
