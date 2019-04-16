@@ -2,9 +2,10 @@
 Introductory CS110 course Midterm 2 project.
 
 ## Team Members
-- Eng. Khaled Soliman
-- Sci. Laila Nasser
-- Eng. Mazen Amr
+- CEng. Khaled Soliman
+- CSci. Laila Nasser
+- MICT Aya Hegazi
+- CEng. Mazen Amr
 ## Supervisior
 - Dr. Amr Helmy
 ## Univsersity
